@@ -1,31 +1,30 @@
 package strings
 
-import "strings"
+import "sort"
 
-// SplitAndPreserveQuotes splits a string by spaces, but keeps quoted content together
-func SplitAndPreserveQuotes(data string) (set []string) {
-	var (
-		quoted     bool
-		start, pos int
-	)
-	for pos = 0; pos < len(data); pos++ {
-		switch data[pos] {
-		case '"':
-			quoted = !quoted
-		case ' ', '\t':
-			if quoted {
-				break
-			}
-			if str := strings.TrimSpace(data[start:pos]); len(str) > 0 {
-				set = append(set, strings.Replace(str, "\"", "", -1))
-			}
-			start = pos + 1
-		}
+// Strings provides convenience methods for string slices
+type Strings []string
+
+// Contains returns whether the slice contains a string
+func (s Strings) Contains(a string) bool {
+	if !sort.StringsAreSorted(s) {
+		sort.Strings(s)
 	}
-	if start < pos {
-		if str := strings.TrimSpace(data[start:pos]); len(str) > 0 {
-			set = append(set, strings.Replace(str, "\"", "", -1))
-		}
+
+	i := sort.SearchStrings(s, a)
+	return i < len(s) && s[i] == a
+}
+
+// Add a string to the slice
+func (s Strings) Add(a string) []string {
+	return append(s, a)
+}
+
+// Remove a string from a slice
+func (s Strings) Remove(a string) []string {
+	i := sort.SearchStrings(s, a)
+	if s[i] != a {
+		return s
 	}
-	return
+	return append(s[:i], s[i+1:]...)
 }
